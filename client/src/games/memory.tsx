@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { GameScore } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 
 const SYMBOLS = ["🎮", "🎲", "🎯", "🎪", "🎨", "🎭", "🎪", "🎯"];
 const PAIRS = [...SYMBOLS, ...SYMBOLS];
@@ -14,6 +16,10 @@ export default function Memory() {
   const [score, setScore] = useState(0);
   const [moves, setMoves] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+
+  const { data: userScores } = useQuery<GameScore[]>({
+    queryKey: ["/api/user/scores"],
+  });
 
   useEffect(() => {
     resetGame();
@@ -51,7 +57,7 @@ export default function Memory() {
     if (selectedCards.length === 1) {
       setMoves((m) => m + 1);
       const [firstIndex] = selectedCards;
-      
+
       if (cards[firstIndex].symbol === cards[index].symbol) {
         // Match found
         setTimeout(() => {
@@ -89,43 +95,75 @@ export default function Memory() {
   };
 
   return (
-    <Card className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <div className="space-x-4">
-          <span className="font-mono">Score: {score}</span>
-          <span className="font-mono">Moves: {moves}</span>
+    <>
+      <Card className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <div className="space-x-4">
+            <span className="font-mono">Score: {score}</span>
+            <span className="font-mono">Moves: {moves}</span>
+          </div>
+          <Button size="icon" variant="outline" onClick={resetGame}>
+            <RotateCcw className="h-4 w-4" />
+          </Button>
         </div>
-        <Button size="icon" variant="outline" onClick={resetGame}>
-          <RotateCcw className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="grid grid-cols-4 gap-2">
-        {cards.map((card, index) => (
-          <motion.button
-            key={index}
-            className={`aspect-square text-2xl flex items-center justify-center rounded-lg ${
-              card.isFlipped || card.isMatched
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted"
-            }`}
-            onClick={() => handleCardClick(index)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {(card.isFlipped || card.isMatched) && card.symbol}
-          </motion.button>
-        ))}
-      </div>
-      {gameOver && (
-        <div className="mt-4 text-center">
-          <h3 className="text-lg font-semibold text-primary">
-            Congratulations! You won!
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Press the reset button to play again
-          </p>
+        <div className="grid grid-cols-4 gap-2">
+          {cards.map((card, index) => (
+            <motion.button
+              key={index}
+              className={`aspect-square text-2xl flex items-center justify-center rounded-lg ${card.isFlipped || card.isMatched
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted"
+                }`}
+              onClick={() => handleCardClick(index)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {(card.isFlipped || card.isMatched) && card.symbol}
+            </motion.button>
+          ))}
         </div>
-      )}
-    </Card>
+        {gameOver && (
+          <div className="mt-4 text-center">
+            <h3 className="text-lg font-semibold text-primary">
+              Congratulations! You won!
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Press the reset button to play again
+            </p>
+          </div>
+        )}
+      </Card>
+
+      {/* Recent Scores */}
+      <div>
+        <Card className="bg-card p-6 rounded-lg shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Trophy className="h-6 w-6 text-primary" />
+              Your Recent Scores
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {userScores && userScores.length > 0 ? (
+              userScores.slice(0, 5).map((score) => (
+                <div
+                  key={score.id}
+                  className="flex justify-between items-center py-2 border-b border-border last:border-0"
+                >
+                  <span className="capitalize font-semibold">
+                    {score.game}
+                  </span>
+                  <span className="font-mono text-lg">{score.score}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground">
+                No scores yet. Play a game to get started!
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }
