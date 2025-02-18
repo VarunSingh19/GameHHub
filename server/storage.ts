@@ -41,9 +41,13 @@ export class MongoDBStorage implements IStorage {
 
   async getScoresByGame(game: string): Promise<GameScore[]> {
     const scores = await GameScoreModel.find({ game })
+      .populate('userId', 'username')
       .sort({ score: -1 })
       .limit(100);
-    return scores.map(score => score.toObject());
+    return scores.map(score => ({
+      ...score.toObject(),
+      username: (score.userId as any)?.username
+    }));
   }
 
   async getUserScores(userId: string): Promise<GameScore[]> {

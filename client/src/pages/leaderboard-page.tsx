@@ -1,14 +1,17 @@
+import { useState } from 'react';
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy } from "lucide-react";
 import type { GameScore } from "@shared/schema";
 
+type ScoreWithUsername = GameScore & { username?: string };
+
 export default function LeaderboardPage() {
   const games = ["snake", "memory"];
-  const activeGame = games[0];
+  const [activeGame, setActiveGame] = useState(games[0]);
 
-  const { data: scores } = useQuery<GameScore[]>({
+  const { data: scores } = useQuery<ScoreWithUsername[]>({
     queryKey: [`/api/scores/${activeGame}`],
   });
 
@@ -21,7 +24,7 @@ export default function LeaderboardPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="snake">
+        <Tabs value={activeGame} onValueChange={setActiveGame}>
           <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
             <TabsTrigger value="snake">Snake</TabsTrigger>
             <TabsTrigger value="memory">Memory</TabsTrigger>
