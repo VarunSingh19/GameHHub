@@ -6,7 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { GameScore } from "@shared/schema";
 import Snake from "@/games/snake";
 import Memory from "@/games/memory";
-import { LogOut, Trophy } from "lucide-react";
+import { LogOut, Trophy, User } from "lucide-react";
+import { Link } from "wouter";
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
@@ -20,7 +21,18 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold">GameHub</h1>
           <div className="flex items-center gap-4">
-            <span>Welcome, {user?.username}</span>
+            <Link href="/profile">
+              <Button variant="ghost" size="sm">
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </Button>
+            </Link>
+            <Link href="/leaderboard">
+              <Button variant="ghost" size="sm">
+                <Trophy className="h-4 w-4 mr-2" />
+                Leaderboard
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
