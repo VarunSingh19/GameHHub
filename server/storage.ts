@@ -1,66 +1,56 @@
 import type { IStorage } from "./types";
 import type { User, InsertUser, GameScore } from "@shared/schema";
+import { UserModel } from "./db/models/user";
+import { GameScoreModel } from "./db/models/game-score";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import MongoStore from "connect-mongo";
 
-const MemoryStore = createMemoryStore(session);
+if (!process.env.MONGODB_URI) {
+  throw new Error("MONGODB_URI environment variable is not set");
+}
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private scores: Map<number, GameScore>;
-  private currentUserId: number;
-  private currentScoreId: number;
+export class MongoDBStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
-    this.scores = new Map();
-    this.currentUserId = 1;
-    this.currentScoreId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    this.sessionStore = MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      ttl: 14 * 24 * 60 * 60, // 14 days
     });
   }
 
-  async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+  async getUser(id: string): Promise<User | undefined> {
+    const user = await UserModel.findById(id);
+    return user ? user.toObject() : undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const user = await UserModel.findOne({ username });
+    return user ? user.toObject() : undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    const user = await UserModel.create(insertUser);
+    return user.toObject();
   }
 
   async createScore(score: Omit<GameScore, "id" | "playedAt">): Promise<GameScore> {
-    const id = this.currentScoreId++;
-    const newScore: GameScore = {
-      ...score,
-      id,
-      playedAt: new Date(),
-    };
-    this.scores.set(id, newScore);
-    return newScore;
+    const gameScore = await GameScoreModel.create(score);
+    return gameScore.toObject();
   }
 
   async getScoresByGame(game: string): Promise<GameScore[]> {
-    return Array.from(this.scores.values())
-      .filter((score) => score.game === game)
-      .sort((a, b) => b.score - a.score);
+    const scores = await GameScoreModel.find({ game })
+      .sort({ score: -1 })
+      .limit(100);
+    return scores.map(score => score.toObject());
   }
 
-  async getUserScores(userId: number): Promise<GameScore[]> {
-    return Array.from(this.scores.values())
-      .filter((score) => score.userId === userId)
-      .sort((a, b) => b.playedAt.getTime() - a.playedAt.getTime());
+  async getUserScores(userId: string): Promise<GameScore[]> {
+    const scores = await GameScoreModel.find({ userId })
+      .sort({ playedAt: -1 });
+    return scores.map(score => score.toObject());
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new MongoDBStorage();
