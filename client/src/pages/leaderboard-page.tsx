@@ -8,7 +8,7 @@ import type { GameScore } from "@shared/schema";
 type ScoreWithUsername = GameScore & { username?: string };
 
 export default function LeaderboardPage() {
-  const games = ["snake", "memory"];
+  const games = ["snake", "memory", "tetris"];
   const [activeGame, setActiveGame] = useState(games[0]);
 
   const { data: scores } = useQuery<ScoreWithUsername[]>({
@@ -25,9 +25,10 @@ export default function LeaderboardPage() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs value={activeGame} onValueChange={setActiveGame}>
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+          <TabsList className="grid w-full grid-cols-3 max-w-[600px]">
             <TabsTrigger value="snake">Snake</TabsTrigger>
             <TabsTrigger value="memory">Memory</TabsTrigger>
+            <TabsTrigger value="tetris">Tetris</TabsTrigger>
           </TabsList>
 
           {games.map((game) => (

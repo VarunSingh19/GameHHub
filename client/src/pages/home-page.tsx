@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { GameScore } from "@shared/schema";
 import Snake from "@/games/snake";
 import Memory from "@/games/memory";
+import Tetris from "@/games/tetris";
 import { LogOut, Trophy, User } from "lucide-react";
 import { Link } from "wouter";
 
@@ -47,9 +48,10 @@ export default function HomePage() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="snake">
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
+          <TabsList className="grid w-full grid-cols-3 max-w-[600px]">
             <TabsTrigger value="snake">Snake</TabsTrigger>
             <TabsTrigger value="memory">Memory</TabsTrigger>
+            <TabsTrigger value="tetris">Tetris</TabsTrigger>
           </TabsList>
           <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_300px]">
             <div>
@@ -58,6 +60,9 @@ export default function HomePage() {
               </TabsContent>
               <TabsContent value="memory" className="m-0">
                 <Memory />
+              </TabsContent>
+              <TabsContent value="tetris" className="m-0">
+                <Tetris />
               </TabsContent>
             </div>
             <div className="space-y-6">
