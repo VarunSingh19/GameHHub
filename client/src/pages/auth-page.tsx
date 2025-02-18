@@ -55,7 +55,7 @@ export default function AuthPage() {
 function LoginForm() {
   const { loginMutation } = useAuth();
   const form = useForm({
-    resolver: zodResolver(insertUserSchema),
+    resolver: zodResolver(insertUserSchema.pick({ username: true, password: true })),
     defaultValues: {
       username: "",
       password: "",
@@ -122,6 +122,7 @@ function RegisterForm() {
     resolver: zodResolver(insertUserSchema),
     defaultValues: {
       username: "",
+      email: "",
       password: "",
     },
   });
@@ -145,6 +146,19 @@ function RegisterForm() {
                   <FormLabel>Username</FormLabel>
                   <FormControl>
                     <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
