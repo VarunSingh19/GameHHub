@@ -9,7 +9,7 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
     await connectToDatabase();
     isDBConnected = true;
   }
-  await new Promise<void>((resolve) => {
+  await new Promise < void> ((resolve) => {
     app(req as any, res as any, resolve as any);
   });
 };
