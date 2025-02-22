@@ -9,14 +9,14 @@
       }
     },
     {
-      "src": "server/serverless.ts",
+      "src": "server/serverless.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/serverless.ts"
+      "dest": "server/serverless.js"
     },
     {
       "src": "/(.*)",
